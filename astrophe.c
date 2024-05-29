@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 typedef enum {
   TYPE_NULL,
@@ -199,8 +200,10 @@ Object *object_list_split(Object *list, void *value, size_t vcount) {
         size_t i;                                                              \
         type current;                                                          \
       } loop = {0, object_vat(list, type, 0)};                                 \
-      loop.i < list->count;                                                    \
-      loop.i++, loop.current = object_vat(list, type, loop.i))
+      loop.i < list->count; loop.i++,                                          \
+        loop.current = object_vat(list, type, MIN(list->count - 1, loop.i)))
+
+#define object_split(list, obj) object_list_split(list, obj->data, obj->count)
 
 int main(int argc, char **argv) {
   Object *str1 = object_create_string("yeeat");
@@ -213,8 +216,8 @@ int main(int argc, char **argv) {
   object_list_prepend(str1, space);
   object_list_prepend(str1, str2);
 
-  Object *split = object_list_split(str1, space->data, 1);
-  Object *split2 = object_list_split(str1, ee->data, 2);
+  Object *split = object_split(str1, space);
+  Object *split2 = object_split(str1, ee);
   Object *pf = object_list_pop_front(str1);
   Object *pb = object_list_pop_back(str1);
 
